@@ -1,3 +1,0 @@
-# Information Retrieval Assignment - Punjabi Positional Indexer
-# Uses Python standard library only (no external pip dependencies required).
-# Built-in modules used: bz2, xml, sqlite3, pickle, re, argparse, time, os, sys

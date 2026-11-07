@@ -3,8 +3,7 @@ Information Retrieval Assignment 1: Positional Index
 Language: Punjabi (Gurmukhi Script)
 Dataset: Official Punjabi Wikipedia XML Dump (pawiki-latest-pages-articles.xml.bz2)
 
-GitHub: https://github.com/gurwinder-s24/S20240010082-A1-PostIndex-IR-M2026.git
-Google Drive: https://drive.google.com/drive/folders/1MtTEjQ5v2KZqlflpOdnf8K0BpDuWUCt3?usp=drive_link
+Google Drive (Dataset & Index files): https://drive.google.com/drive/folders/1MtTEjQ5v2KZqlflpOdnf8K0BpDuWUCt3?usp=drive_link
 Wikipedia Dump URL: https://dumps.wikimedia.org/pawiki/latest/pawiki-latest-pages-articles.xml.bz2
 
 
@@ -131,5 +130,5 @@ Final zip file: S20240010082-A1-PostIndex-IR-M2026.zip
 
 Contains:
 1. README (this documentation)
-2. S20240010082-src.zip (contains src/ and requirements.txt)
+2. S20240010082-src.zip (contains src/ folder)
 3. output (test cases and rare terms output)
