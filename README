@@ -1,0 +1,135 @@
+Roll No: S20240010082
+Information Retrieval Assignment 1: Positional Index
+Language: Punjabi (Gurmukhi Script)
+Dataset: Official Punjabi Wikipedia XML Dump (pawiki-latest-pages-articles.xml.bz2)
+
+GitHub: https://github.com/gurwinder-s24/S20240010082-A1-PostIndex-IR-M2026.git
+Google Drive: https://drive.google.com/drive/folders/1ir-punjabi-wikipedia-dump-S20240010082?usp=sharing
+Wikipedia Dump URL: https://dumps.wikimedia.org/pawiki/latest/pawiki-latest-pages-articles.xml.bz2
+
+
+1. Overview and Architecture
+----------------------------
+This project implements a positional index for 59,861 authentic Punjabi Wikipedia articles.
+The system uses a two-tier memory setup:
+
+1. Main Memory (RAM):
+   - Stores the complete vocabulary dictionary (601,876 unique terms).
+   - For each term, it keeps:
+     * Document Frequency (DF): number of documents containing the term.
+     * Collection Frequency (CF): total occurrences of the term in the corpus.
+     * Secondary Storage Offset: byte position in postings.bin.
+     * Payload Size: byte length to read.
+   - Saved on disk as data/vocab.pkl (~24 MB) and loaded into RAM on startup in < 0.3s.
+
+2. Secondary Memory (SSD / Disk):
+   - Stores all postings lists in data/postings.bin (~133 MB).
+   - Each term's postings list contains: [(doc_id, [pos1, pos2, ...]), ...]
+   - When a term is searched, the program seeks directly to the term's byte offset in postings.bin and reads only its payload. No postings are kept in RAM.
+
+3. Corpus Storage:
+   - Extracted plain text for all 59,861 articles is stored in SQLite (data/corpus.db, ~279 MB) for snippet and title lookups.
+
+
+2. Corpus Statistics
+--------------------
+- Source: Official Wikimedia XML dump (pawiki-latest-pages-articles.xml.bz2)
+- Language: Punjabi (Gurmukhi script)
+- Total Articles: 59,861 (Namespace 0 content pages, non-redirects)
+- Total Words: 19,746,792
+- Total Postings: 9,814,757
+- Unique Vocabulary Terms: 601,876
+- Vocab in RAM: 24.59 MB
+- Postings on Disk: 133.04 MB
+
+
+3. Source Code Modules
+----------------------
+- src/dump_parser.py:
+  Downloads and streams pawiki-latest-pages-articles.xml.bz2, cleans wikitext markup (templates, citations, categories, tags), and stores clean text in data/corpus.db.
+
+- src/positional_index.py:
+  Contains the Punjabi tokenizer (handles Gurmukhi unicode, dandas ।, ॥, |), the DiskPostingsReader for random-access secondary memory reads, and the PositionalIndex search engine.
+
+- src/indexer.py:
+  CLI runner for viewing stats, running the 5 test cases, displaying the 10 rare terms, searching terms, and generating the output file.
+
+
+4. How to Run the Code
+----------------------
+Prerequisites:
+- Python 3.8+ (uses only Python standard library: bz2, xml, sqlite3, pickle, re, argparse, time, os, sys).
+- No external pip dependencies needed.
+
+Commands:
+1. Show Index Statistics:
+   python src/indexer.py --stats
+
+2. Run 5 Test Cases:
+   python src/indexer.py --test-cases
+
+3. Show 10 Rare Terms with Positional Index:
+   python src/indexer.py --rare-terms
+
+4. Search:
+   python src/indexer.py --search "ਪੰਜਾਬ ਸੱਭਿਆਚਾਰ"
+
+5. Regenerate the output file:
+   python src/indexer.py --generate-output
+
+6. (Optional) Rebuild database and index from the dump:
+   python src/indexer.py --build
+
+
+5. Summary of 5 Test Cases
+--------------------------
+1. Single Term Query:
+   - Query: 'ਇਤਿਹਾਸ' (History)
+   - DF: 7,393 documents | CF: 11,207 occurrences
+   - Retrieves matching documents and positions ranked by frequency.
+
+2. Multi-Term Conjunction:
+   - Query: 'ਪੰਜਾਬ ਸੱਭਿਆਚਾਰ' (Punjab Culture)
+   - Term 1 ('ਪੰਜਾਬ'): DF = 10,809, CF = 22,275
+   - Term 2 ('ਸੱਭਿਆਚਾਰ'): DF = 1,772, CF = 4,544
+   - Intersected Matches: 439 documents contain both terms with exact positions.
+
+3. High-Frequency Term:
+   - Query: 'ਭਾਰਤ' (India)
+   - DF: 17,652 documents | CF: 41,836 occurrences
+   - Tests binary seek retrieval on large postings list from secondary memory.
+
+4. Domain-Specific Term:
+   - Query: 'ਸੰਵਿਧਾਨ' (Constitution)
+   - DF: 752 documents | CF: 1,489 occurrences
+   - Tests targeted vocabulary lookup and position verification.
+
+5. Compound Query:
+   - Query: 'ਗੁਰਮੁਖੀ ਲਿਪੀ' (Gurmukhi Script)
+   - Term 1 ('ਗੁਰਮੁਖੀ'): DF = 478, CF = 1,180
+   - Term 2 ('ਲਿਪੀ'): DF = 369, CF = 988
+   - Intersected Matches: 112 documents contain both terms.
+
+
+6. 10 Rare Terms Evaluated (from Secondary Memory)
+--------------------------------------------------
+1.  ਸੋਚੈ      [Sochai (By thinking / contemplation)]       | DF: 1 | CF: 1
+2.  ਸੋਚਿ      [Sochi (Pondered / Reflected upon)]         | DF: 2 | CF: 2
+3.  ਸਰਸਾਰ     [Sarsar (Abundant / Overflowing)]           | DF: 1 | CF: 1
+4.  ਹੋਵਈ      [Hovai (Occurs / Comes to pass)]            | DF: 2 | CF: 2
+5.  ਬਖ਼ਸ਼ਿਸ਼ਾਂ   [Bakhshishan (Blessings / Divine Gifts)]    | DF: 2 | CF: 3
+6.  ਸੁਭਾਇਮਾਨ  [Subhaiman (Glorious / Splendid)]           | DF: 3 | CF: 3
+7.  ਨਾਭਵੀ     [Nabhavi (Resident of Nabha state)]         | DF: 3 | CF: 3
+8.  ਅਕਾਲਪੁਰਖ  [Akalpurakh (Timeless Almighty)]            | DF: 3 | CF: 3
+9.  ਵੀਚਾਰੁ    [Vicharu (Deliberation / Contemplation)]    | DF: 4 | CF: 4
+10. ਨਿਰਵੈਰੁ   [Nirvairu (Without animosity / malice)]     | DF: 5 | CF: 6
+
+
+7. Submission Structure
+-----------------------
+Final zip file: S20240010082-A1-PostIndex-IR-M2026.zip
+
+Contains:
+1. README (this documentation)
+2. S20240010082-src.zip (contains src/ and requirements.txt)
+3. output (test cases and rare terms output)

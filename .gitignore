@@ -1,0 +1,15 @@
+# Ignore large binary dataset files and SQLite databases (GitHub 100MB limit)
+data/
+*.db
+*.bin
+*.bz2
+*.pkl
+
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local submission zip archives
+*.zip
+
